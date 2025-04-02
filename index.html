@@ -46,13 +46,23 @@
             }
         });
 
+        // Datos de ejemplo si no se sube un archivo (basado en lo que me diste)
+        const sampleData = [
+            { "CONSECUTIVO EN EL RUP": "N/A", "CONTRATANTE": "Departamento de Policía Guajira", "CODIGOS": "26111700 26121600 30101800 30102900 32101500 32101600 32111500 32111600 32111700 39121000 41113600 41113700 43191500 43191600 43221500 43221700 43222500 43222600 43222800 43232300 43232800 43232900 43233200 44103100 52161500 52161600 72103300 72141100 72151500 72151600 73152100 76101500 80111600 81101700 81111800 81112000 81112100 81112200 81161700 92101500 92121700 95121800" },
+            { "CONSECUTIVO EN EL RUP": "N/A", "CONTRATANTE": "Policía Metropolitana San Jerónimo de Monteríra", "CODIGOS": "26111700 26121600 30101800 30102900 32101500 32101600 32111500 32111600 32111700 39121000 41113600 41113700 43191500 43191600 43221500 43221700 43222500 43222600 43222800 43232300 43232800 43232900 43233200 44103100 52161500 52161600 72103300 72141100 72151500 72151600 73152100 76101500 80111600 81101700 81111800 81112000 81112100 81112200 81161700 92101500 92121700 95121800" },
+            { "CONSECUTIVO EN EL RUP": "N/A", "CONTRATANTE": "ESE Hospital San Pedro Claver de Mogotes Santander", "CODIGOS": "26111700 32101600 32131000 39121000 41112200 43201400 43201800 43201900 43211500 43211600 43211700 43212100 43221700 43221800 43223100 43233700 45121500 45121600 45131700 46171600 72151600 81111600 81161700 83112300" }
+        ];
+
         // Función para mostrar los datos
         function displayData(data) {
             const list = document.getElementById('list');
             list.innerHTML = '';
 
-            data.forEach(item => {
-                const codes = item['CODIGOS'] ? item['CODIGOS'].split(', ') : [];
+            // Usar datos de ejemplo si no se sube archivo, o los datos del Excel
+            const displayData = data.length > 0 ? data : sampleData;
+
+            displayData.forEach(item => {
+                const codes = item['CODIGOS'] ? item['CODIGOS'].split(' ') : []; // Separar por espacios
                 const itemDiv = document.createElement('div');
                 itemDiv.className = 'border border-gray-200 p-4 rounded-lg';
                 itemDiv.innerHTML = `
@@ -110,6 +120,9 @@
                 });
             }
         }
+
+        // Mostrar datos de ejemplo al cargar la página
+        window.onload = () => displayData([]);
     </script>
 </body>
 </html>
