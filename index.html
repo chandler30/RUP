@@ -3,119 +3,113 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Lista de Códigos</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 20px;
-        }
-        .container {
-            max-width: 800px;
-            margin: 0 auto;
-        }
-        .item {
-            border: 1px solid #ccc;
-            padding: 10px;
-            margin: 5px 0;
-            cursor: pointer;
-        }
-        .highlighted {
-            background-color: #ffff99;
-            border-color: #ffcc00;
-        }
-        .save-button {
-            padding: 10px 20px;
-            background-color: #4CAF50;
-            color: white;
-            border: none;
-            cursor: pointer;
-            margin-top: 20px;
-        }
-        .save-button:hover {
-            background-color: #45a049;
-        }
-    </style>
+    <title>Subir Excel y Mostrar Códigos</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- XLSX Library CDN -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 </head>
-<body>
-    <div class="container">
-        <h1>Lista de Códigos</h1>
-        <div id="list"></div>
-        <button class="save-button" onclick="saveProgress()">Guardar Progreso</button>
+<body class="bg-gray-100 min-h-screen flex items-center justify-center p-4">
+    <div class="container max-w-4xl mx-auto bg-white p-6 rounded-lg shadow-lg">
+        <h1 class="text-2xl font-bold text-gray-800 mb-4">Subir Excel y Mostrar Códigos</h1>
+        
+        <!-- Input para subir el archivo -->
+        <div class="mb-4">
+            <label class="block text-sm font-medium text-gray-700 mb-2" for="excelFile">Subir archivo Excel</label>
+            <input type="file" id="excelFile" accept=".xls,.xlsx" class="block w-full text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500">
+        </div>
+
+        <!-- Contenedor para mostrar los datos -->
+        <div id="list" class="space-y-4"></div>
+
+        <!-- Botón para guardar progreso -->
+        <button id="saveButton" class="mt-4 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500">Guardar Progreso</button>
     </div>
 
     <script>
-        // Datos de ejemplo (reemplaza esto con tus datos reales del Excel)
-        const data = [
-            { consecutivo: "001", contratante: "Empresa A", codigos: "ABC123, XYZ789, DEF456" },
-            { consecutivo: "002", contratante: "Empresa B", codigos: "GHI789, JKL012" },
-            { consecutivo: "003", contratante: "Empresa C", codigos: "MNO345, PQR678, STU901" }
-        ];
+        // Escuchar el evento de cambio en el input de archivo
+        document.getElementById('excelFile').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const data = new Uint8Array(e.target.result);
+                    const workbook = XLSX.read(data, { type: 'array' });
+                    const sheetName = workbook.SheetNames[0];
+                    const sheet = workbook.Sheets[sheetName];
+                    const jsonData = XLSX.utils.sheet_to_json(sheet);
+
+                    // Mostrar los datos
+                    displayData(jsonData);
+                };
+                reader.readAsArrayBuffer(file);
+            }
+        });
 
         // Función para mostrar los datos
-        function displayData() {
+        function displayData(data) {
             const list = document.getElementById('list');
             list.innerHTML = '';
 
-            data.forEach((item, index) => {
-                const codesArray = item.codigos.split(', ');
+            data.forEach(item => {
+                const codes = item['CODIGOS'] ? item['CODIGOS'].split(', ') : [];
                 const itemDiv = document.createElement('div');
+                itemDiv.className = 'border border-gray-200 p-4 rounded-lg';
                 itemDiv.innerHTML = `
-                    <div><strong>Consecutivo:</strong> ${item.consecutivo}</div>
-                    <div><strong>Contratante:</strong> ${item.contratante}</div>
-                    <div><strong>Códigos:</strong></div>
+                    <p class="text-sm text-gray-600"><strong>Consecutivo:</strong> ${item['CONSECUTIVO EN EL RUP'] || 'N/A'}</p>
+                    <p class="text-sm text-gray-600"><strong>Contratante:</strong> ${item['CONTRATANTE'] || 'N/A'}</p>
+                    <p class="text-sm text-gray-600"><strong>Códigos:</strong></p>
+                    <div class="flex flex-wrap gap-2 mt-2"></div>
                 `;
 
-                const codesContainer = document.createElement('div');
-                codesArray.forEach(code => {
+                const codesContainer = itemDiv.querySelector('div');
+                codes.forEach(code => {
                     const codeSpan = document.createElement('span');
                     codeSpan.textContent = code;
-                    codeSpan.className = 'item';
+                    codeSpan.className = 'inline-block px-3 py-1 bg-gray-200 text-gray-800 text-sm rounded-full cursor-pointer hover:bg-gray-300';
                     codeSpan.onclick = () => toggleHighlight(codeSpan);
                     codesContainer.appendChild(codeSpan);
                 });
 
-                itemDiv.appendChild(codesContainer);
                 list.appendChild(itemDiv);
             });
 
-            // Cargar el progreso guardado
+            // Cargar progreso guardado
             loadProgress();
         }
 
         // Función para resaltar o quitar resaltado
         function toggleHighlight(element) {
-            element.classList.toggle('highlighted');
+            element.classList.toggle('bg-yellow-300');
+            element.classList.toggle('text-gray-900');
         }
 
         // Función para guardar el progreso
-        function saveProgress() {
-            const items = document.querySelectorAll('.item');
+        document.getElementById('saveButton').addEventListener('click', function() {
+            const items = document.querySelectorAll('#list span');
             const highlighted = [];
             items.forEach((item, index) => {
-                if (item.classList.contains('highlighted')) {
+                if (item.classList.contains('bg-yellow-300')) {
                     highlighted.push(index);
                 }
             });
             localStorage.setItem('highlightedCodes', JSON.stringify(highlighted));
             alert('Progreso guardado exitosamente');
-        }
+        });
 
         // Función para cargar el progreso
         function loadProgress() {
             const saved = localStorage.getItem('highlightedCodes');
             if (saved) {
                 const highlighted = JSON.parse(saved);
-                const items = document.querySelectorAll('.item');
+                const items = document.querySelectorAll('#list span');
                 highlighted.forEach(index => {
                     if (items[index]) {
-                        items[index].classList.add('highlighted');
+                        items[index].classList.add('bg-yellow-300', 'text-gray-900');
                     }
                 });
             }
         }
-
-        // Mostrar los datos al cargar la página
-        window.onload = displayData;
     </script>
 </body>
 </html>
