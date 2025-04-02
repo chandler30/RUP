@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lista de Códigos</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        .item {
+            border: 1px solid #ccc;
+            padding: 10px;
+            margin: 5px 0;
+            cursor: pointer;
+        }
+        .highlighted {
+            background-color: #ffff99;
+            border-color: #ffcc00;
+        }
+        .save-button {
+            padding: 10px 20px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            cursor: pointer;
+            margin-top: 20px;
+        }
+        .save-button:hover {
+            background-color: #45a049;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Lista de Códigos</h1>
+        <div id="list"></div>
+        <button class="save-button" onclick="saveProgress()">Guardar Progreso</button>
+    </div>
+
+    <script>
+        // Datos de ejemplo (reemplaza esto con tus datos reales del Excel)
+        const data = [
+            { consecutivo: "001", contratante: "Empresa A", codigos: "ABC123, XYZ789, DEF456" },
+            { consecutivo: "002", contratante: "Empresa B", codigos: "GHI789, JKL012" },
+            { consecutivo: "003", contratante: "Empresa C", codigos: "MNO345, PQR678, STU901" }
+        ];
+
+        // Función para mostrar los datos
+        function displayData() {
+            const list = document.getElementById('list');
+            list.innerHTML = '';
+
+            data.forEach((item, index) => {
+                const codesArray = item.codigos.split(', ');
+                const itemDiv = document.createElement('div');
+                itemDiv.innerHTML = `
+                    <div><strong>Consecutivo:</strong> ${item.consecutivo}</div>
+                    <div><strong>Contratante:</strong> ${item.contratante}</div>
+                    <div><strong>Códigos:</strong></div>
+                `;
+
+                const codesContainer = document.createElement('div');
+                codesArray.forEach(code => {
+                    const codeSpan = document.createElement('span');
+                    codeSpan.textContent = code;
+                    codeSpan.className = 'item';
+                    codeSpan.onclick = () => toggleHighlight(codeSpan);
+                    codesContainer.appendChild(codeSpan);
+                });
+
+                itemDiv.appendChild(codesContainer);
+                list.appendChild(itemDiv);
+            });
+
+            // Cargar el progreso guardado
+            loadProgress();
+        }
+
+        // Función para resaltar o quitar resaltado
+        function toggleHighlight(element) {
+            element.classList.toggle('highlighted');
+        }
+
+        // Función para guardar el progreso
+        function saveProgress() {
+            const items = document.querySelectorAll('.item');
+            const highlighted = [];
+            items.forEach((item, index) => {
+                if (item.classList.contains('highlighted')) {
+                    highlighted.push(index);
+                }
+            });
+            localStorage.setItem('highlightedCodes', JSON.stringify(highlighted));
+            alert('Progreso guardado exitosamente');
+        }
+
+        // Función para cargar el progreso
+        function loadProgress() {
+            const saved = localStorage.getItem('highlightedCodes');
+            if (saved) {
+                const highlighted = JSON.parse(saved);
+                const items = document.querySelectorAll('.item');
+                highlighted.forEach(index => {
+                    if (items[index]) {
+                        items[index].classList.add('highlighted');
+                    }
+                });
+            }
+        }
+
+        // Mostrar los datos al cargar la página
+        window.onload = displayData;
+    </script>
+</body>
+</html>
